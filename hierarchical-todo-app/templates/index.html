@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo Application</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to your CSS file -->
+</head>
+<body>
+
+    <nav>
+        <h1>Todo Application</h1>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/register">Register</a></li>
+            <li><a href="/login">Login</a></li>
+        </ul>
+    </nav>
+
+<!-- Loop through and display flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <!-- Display each message in a div with a class based on the message category (success or danger) -->
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+    <main>
+        <section id="todo-lists">
+            <h2>Your Todo Lists</h2>
+            <button id="new-list-button">Create New List</button>
+            <!-- Todo lists will be dynamically populated here -->
+        </section>
+
+        <section id="todo-items">
+            <h2>Todo Items</h2>
+            <button id="new-item-button">Add New Item</button>
+            <!-- Todo items and actions will be dynamically populated here -->
+        </section>
+    </main>
+
+    <script src="app.js"></script> <!-- Link to your JavaScript file -->
+
+</body>
+</html>
