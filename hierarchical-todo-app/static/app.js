@@ -20,47 +20,23 @@ function fetchTodoItems() {
     });
 }
 
-// Function to display todo items on the webpage
 function displayTodoItems(items) {
     var todoListContainer = document.getElementById('todo-list-container');
     
-    // Check if the element exists on the page
-    if (todoListContainer) {
+    // Check if items is defined and is an array
+    if (items && Array.isArray(items)) {
         todoListContainer.innerHTML = ''; // Clearing the container
 
         items.forEach(function (item) {
             var itemElement = document.createElement('div');
-            itemElement.className = 'todo-item';
-            itemElement.setAttribute('data-id', item.id);
-            
-            var itemInput = document.createElement('input');
-            itemInput.type = 'text';
-            itemInput.value = item.content;
-            
-            var updateButton = document.createElement('button');
-            updateButton.innerText = 'Update';
-            updateButton.className = 'update-button';
-            updateButton.setAttribute('data-id', item.id);
-            updateButton.onclick = function() {
-                updateTodoItem(item.id, itemInput.value, item.completed);
-            };
-            
-            var deleteButton = document.createElement('button');
-            deleteButton.innerText = 'Delete';
-            deleteButton.className = 'delete-button';
-            deleteButton.setAttribute('data-id', item.id);
-            deleteButton.onclick = function() {
-                deleteTodoItem(item.id);
-            };
-            
-            itemElement.appendChild(itemInput);
-            itemElement.appendChild(updateButton);
-            itemElement.appendChild(deleteButton);
-            
+            itemElement.innerText = item.content;
             todoListContainer.appendChild(itemElement);
         });
+    } else {
+        console.error('Items is undefined or not an array:', items);
     }
 }
+
 
 
 // Function to add a new todo item
