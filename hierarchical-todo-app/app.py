@@ -171,7 +171,8 @@ def delete_todoitem(item_id):
 # Defining a basic route for testing
 @app.route('/')
 def home():
-    return 'Hello, World!'
+    return render_template('index.html')  # or the name of your home page HTML file
+
 
 
 # Main block to run the application

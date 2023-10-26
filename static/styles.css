@@ -1,0 +1,103 @@
+/* Resetting some default styles in browsers */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Styling the body with a light blue background */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #E8F8FF;
+    color: #333;
+    padding: 20px;
+}
+
+/* Styling the navigation bar */
+nav {
+    background-color: #3498DB;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+nav h1 {
+    display: inline-block;
+    font-size: 24px;
+    margin-right: 50px;
+}
+
+nav ul {
+    display: inline-block;
+}
+
+nav ul li {
+    display: inline-block;
+    margin-right: 20px;
+}
+
+/* Styling the main content area */
+main {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #3498DB;
+}
+
+/* Styling the forms */
+form {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+input[type="text"],
+button {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+input[type="text"] {
+    width: calc(100% - 22px);
+    margin-bottom: 20px;
+}
+
+button {
+    background-color: #3498DB;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #2980B9;
+}
+
+/* Styling the flash messages */
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.alert-success {
+    background-color: #D4EDDA;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #F8D7DA;
+    color: #721C24;
+}
