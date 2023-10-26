@@ -100,6 +100,22 @@ def create_todolist():
     return jsonify({"message": "Todo list created successfully."}), 201  # Returning a success message
 
 
+@app.route('/update-todo-item/<int:item_id>', methods=['PUT'])
+def update_todoitem(item_id):
+    data = request.get_json()
+    todo_item = TodoItem.query.get(item_id)
+    
+    if todo_item:
+        todo_item.content = data.get('content', todo_item.content)
+        todo_item.completed = data.get('completed', todo_item.completed)
+        db.session.commit()
+        return jsonify({"message": "Todo item updated successfully."}), 200
+    else:
+        return jsonify({"message": "Todo item not found."}), 404
+
+
+
+
 # Route for adding items to the todo lists
 @app.route('/todoitem', methods=['POST'])
 def create_todoitem():
@@ -168,11 +184,65 @@ def delete_todoitem(item_id):
         return jsonify({"message": "Todo item not found."}), 404  # Returning a message if the todo item does not exist
 
 
+@app.route('/add-todo-item', methods=['POST'])
+def add_todo_item():
+    data = request.get_json()  # Getting the JSON data from the request
+
+    # Extracting data from the received JSON
+    content = data.get('content')
+    list_id = data.get('list_id')
+    parent_id = data.get('parent_id')  # This will be used for sub-items
+
+    # Creating a new TodoItem object with the provided data
+    new_item = TodoItem(content=content, list_id=list_id, parent_id=parent_id)
+
+    db.session.add(new_item)  # Adding the new todo item to the database session
+    db.session.commit()  # Committing the session to save the todo item in the database
+
+    return jsonify({"message": "Todo item added successfully.", "id": new_item.id}), 201  # Returning a success message with the new item's ID
+
+
+@app.route('/get-todo-items', methods=['GET'])
+def get_todo_items():
+    # Querying all todo lists and their items from the database
+    todo_lists = TodoList.query.all()
+
+    # Creating a list to hold the todo lists and their items
+    lists_data = []
+
+    for todo_list in todo_lists:
+        # Creating a dictionary to hold each todo list and its items
+        list_data = {
+            'id': todo_list.id,
+            'title': todo_list.title,
+            'items': []
+        }
+
+        # Adding each item in the current todo list to the list_data dictionary
+        for item in todo_list.items:
+            item_data = {
+                'id': item.id,
+                'content': item.content,
+                'completed': item.completed
+            }
+            list_data['items'].append(item_data)
+
+        # Adding the list_data dictionary to the lists_data list
+        lists_data.append(list_data)
+
+    # Returning the lists_data as JSON
+    return jsonify(lists_data)
+
+
+@app.route('/todo')
+def todo():
+    return render_template('todo.html')
+
+
 # Defining a basic route for testing
 @app.route('/')
 def home():
     return render_template('index.html')  # or the name of your home page HTML file
-
 
 
 # Main block to run the application

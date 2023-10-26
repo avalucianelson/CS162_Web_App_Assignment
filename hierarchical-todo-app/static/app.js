@@ -61,5 +61,40 @@ function deleteTodoItem(itemId) {
     });
 }
 
+function deleteTodoItem(item_id) {
+    fetch(`/delete-todo-item/${item_id}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.message);
+        fetchTodoItems();  // Refresh the todo items list after deletion
+    })
+    .catch(error => {
+        console.error('Error deleting todo item:', error);
+    });
+}
+
+function updateTodoItem(item_id, content, completed) {
+    fetch(`/update-todo-item/${item_id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            content: content,
+            completed: completed
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.message);
+        fetchTodoItems();  // Refresh the todo items list after updating
+    })
+    .catch(error => {
+        console.error('Error updating todo item:', error);
+    });
+}
+
 // Load todo items when the page loads
 fetchTodoItems();

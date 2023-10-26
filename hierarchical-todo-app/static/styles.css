@@ -101,3 +101,18 @@ button:hover {
     background-color: #F8D7DA;
     color: #721C24;
 }
+
+header {
+    text-align: center;
+    padding: 50px;
+}
+
+#todo-input {
+    text-align: center;
+    margin: 30px;
+}
+
+#todo-list-container {
+    max-width: 600px;
+    margin: auto;
+}
