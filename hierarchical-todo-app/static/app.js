@@ -30,7 +30,33 @@ function displayTodoItems(items) {
 
         items.forEach(function (item) {
             var itemElement = document.createElement('div');
-            itemElement.innerText = item.content;
+            itemElement.className = 'todo-item';
+            itemElement.setAttribute('data-id', item.id);
+            
+            var itemInput = document.createElement('input');
+            itemInput.type = 'text';
+            itemInput.value = item.content;
+            
+            var updateButton = document.createElement('button');
+            updateButton.innerText = 'Update';
+            updateButton.className = 'update-button';
+            updateButton.setAttribute('data-id', item.id);
+            updateButton.onclick = function() {
+                updateTodoItem(item.id, itemInput.value, item.completed);
+            };
+            
+            var deleteButton = document.createElement('button');
+            deleteButton.innerText = 'Delete';
+            deleteButton.className = 'delete-button';
+            deleteButton.setAttribute('data-id', item.id);
+            deleteButton.onclick = function() {
+                deleteTodoItem(item.id);
+            };
+            
+            itemElement.appendChild(itemInput);
+            itemElement.appendChild(updateButton);
+            itemElement.appendChild(deleteButton);
+            
             todoListContainer.appendChild(itemElement);
         });
     }
@@ -38,15 +64,16 @@ function displayTodoItems(items) {
 
 
 // Function to add a new todo item
-function addTodoItem() {
-    var newItemContent = document.getElementById('new-item-content').value;
+function addTodoItem(list_id) {  // Pass the list_id as a parameter
+    var newItemContent = document.getElementById('new-todo').value;
 
     // Sending a POST request to the server to add a new todo item
-    sendAjaxRequest('POST', '/add-todo-item', { content: newItemContent }, function (response) {
+    sendAjaxRequest('POST', '/add-todo-item', { content: newItemContent, list_id: list_id }, function (response) {
         // Fetching and displaying the updated list of todo items
         fetchTodoItems();
     });
 }
+
 
 // Function to complete a todo item
 function completeTodoItem(itemId) {

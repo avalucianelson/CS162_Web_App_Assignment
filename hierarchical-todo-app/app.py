@@ -184,23 +184,19 @@ def delete_todoitem(item_id):
         return jsonify({"message": "Todo item not found."}), 404  # Returning a message if the todo item does not exist
 
 
-
 @app.route('/add-todo-item', methods=['POST'])
 def add_todo_item():
-    data = request.get_json()  # Getting the JSON data from the request
+    content = request.json.get('content')
+    list_id = request.json.get('list_id')  # Get the list_id from the request
 
-    # Extracting data from the received JSON
-    content = data.get('content')
-    list_id = data.get('list_id')
-    parent_id = data.get('parent_id')  # This will be used for sub-items
-
-    # Creating a new TodoItem object with the provided data
-    new_item = TodoItem(content=content, list_id=list_id, parent_id=parent_id)
-
-    db.session.add(new_item)  # Adding the new todo item to the database session
-    db.session.commit()  # Committing the session to save the todo item in the database
-
-    return jsonify({"message": "Todo item added successfully.", "id": new_item.id}), 201  # Returning a success message with the new item's ID
+    # Ensure that content and list_id are not empty
+    if content and list_id:
+        new_item = TodoItem(content=content, list_id=list_id)
+        db.session.add(new_item)
+        db.session.commit()
+        return jsonify(message='Todo item added successfully'), 200
+    else:
+        return jsonify(message='Content or list_id is missing'), 400
 
 
 @app.route('/get-todo-items', methods=['GET'])

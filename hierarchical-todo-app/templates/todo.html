@@ -22,8 +22,18 @@
 
     <section id="todo-input">
         <input type="text" id="new-todo" placeholder="Enter new todo">
-        <button onclick="addTodo()">Add Todo</button>
+        
+        <!-- Dropdown to select list_id -->
+        <select id="list-id">
+            <option value="1">List 1</option>
+            <option value="2">List 2</option>
+            <!-- Add more options as needed -->
+        </select>
+        
+        <button onclick="addTodoItem(document.getElementById('list-id').value)">Add Todo</button>
     </section>
+    
+    
     <!-- Example of a todo item with update and delete buttons -->
     <div class="todo-item" data-id="1">
         <input type="text" value="Sample Todo Item">
