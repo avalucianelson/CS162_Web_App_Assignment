@@ -49,16 +49,16 @@ def register():
             # If the username exists, flash an error message and redirect to the registration page
             flash('Username already exists. Please choose a different username.', 'danger')
             return redirect(url_for('register'))
-        
+ 
         # If the username doesn't exist, create a new user and add it to the database
         new_user = User(username=username)
         db.session.add(new_user)
         db.session.commit()
-        
+
         # Flash a success message and redirect to the login page
         flash('User registered successfully. You can now log in.', 'success')
         return redirect(url_for('login'))
-    
+
     # If the request method is GET, render the registration page
     return render_template('register.html')
 
@@ -80,7 +80,7 @@ def login():
             # If the username doesn't exist, flash an error message and redirect to the login page
             flash('Username does not exist. Please register or try a different username.', 'danger')
             return redirect(url_for('login'))
-    
+
     # If the request method is GET, render the login page
     return render_template('login.html')
 
@@ -134,14 +134,14 @@ def mark_as_complete(item_id):
     """
     # Querying the database to find the todo item by its ID
     todo_item = TodoItem.query.get(item_id)
-    
+
     if todo_item:  # Checking if the todo item exists
         # Logic to mark the todo item as complete can be added here
         # For example, you might want to add a 'completed' column to your TodoItem model
         # todo_item.completed = True  # Assuming you have a 'completed' column
-        
+
         db.session.commit()  # Committing the changes to the database
-        
+
         return jsonify({"message": f"Todo item {item_id} marked as complete."}), 200  # Returning a success message
     else:
         return jsonify({"message": "Todo item not found."}), 404  # Returning a message if the todo item does not exist
@@ -180,4 +180,3 @@ if __name__ == '__main__':
         db.create_all()  # This will create the database and tables, it runs only when the script is executed directly
 
     app.run(debug=True)  # Running the Flask application in debug mode
-
