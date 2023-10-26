@@ -164,7 +164,7 @@ def mark_as_complete(item_id):
 
 
 # Route for deleting a todo item
-@app.route('/todoitem/<int:item_id>', methods=['DELETE'])
+@app.route('/delete-todo-item/<int:item_id>', methods=['DELETE'])
 def delete_todoitem(item_id):
     """
     Delete a todo item by its ID.
@@ -182,6 +182,7 @@ def delete_todoitem(item_id):
 
     else:
         return jsonify({"message": "Todo item not found."}), 404  # Returning a message if the todo item does not exist
+
 
 
 @app.route('/add-todo-item', methods=['POST'])

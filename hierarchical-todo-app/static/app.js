@@ -23,14 +23,19 @@ function fetchTodoItems() {
 // Function to display todo items on the webpage
 function displayTodoItems(items) {
     var todoListContainer = document.getElementById('todo-list-container');
-    todoListContainer.innerHTML = ''; // Clearing the container
+    
+    // Check if the element exists on the page
+    if (todoListContainer) {
+        todoListContainer.innerHTML = ''; // Clearing the container
 
-    items.forEach(function (item) {
-        var itemElement = document.createElement('div');
-        itemElement.innerText = item.content;
-        todoListContainer.appendChild(itemElement);
-    });
+        items.forEach(function (item) {
+            var itemElement = document.createElement('div');
+            itemElement.innerText = item.content;
+            todoListContainer.appendChild(itemElement);
+        });
+    }
 }
+
 
 // Function to add a new todo item
 function addTodoItem() {
@@ -46,7 +51,7 @@ function addTodoItem() {
 // Function to complete a todo item
 function completeTodoItem(itemId) {
     // Sending a PUT request to the server to mark a todo item as completed
-    sendAjaxRequest('PUT', '/complete-todo-item/' + itemId, {}, function (response) {
+    sendAjaxRequest('PUT', `/todoitem/${itemId}/complete`, {}, function (response) {
         // Fetching and displaying the updated list of todo items
         fetchTodoItems();
     });
@@ -55,25 +60,12 @@ function completeTodoItem(itemId) {
 // Function to delete a todo item
 function deleteTodoItem(itemId) {
     // Sending a DELETE request to the server to delete a todo item
-    sendAjaxRequest('DELETE', '/delete-todo-item/' + itemId, {}, function (response) {
+    sendAjaxRequest('DELETE', `/todoitem/${itemId}`, {}, function (response) {
         // Fetching and displaying the updated list of todo items
         fetchTodoItems();
     });
 }
 
-function deleteTodoItem(item_id) {
-    fetch(`/delete-todo-item/${item_id}`, {
-        method: 'DELETE'
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data.message);
-        fetchTodoItems();  // Refresh the todo items list after deletion
-    })
-    .catch(error => {
-        console.error('Error deleting todo item:', error);
-    });
-}
 
 function updateTodoItem(item_id, content, completed) {
     fetch(`/update-todo-item/${item_id}`, {

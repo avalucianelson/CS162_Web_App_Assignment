@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 100,
+            "driver": "SQLite",
+            "name": "test",
+            "database": "${workspaceFolder:CS162_Web_App_Assignment}/hierarchical-todo-app/instance/site.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}
