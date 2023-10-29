@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template, redirect, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 # Initializing the Flask application
 app = Flask(__name__)
@@ -10,12 +11,15 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 
 db = SQLAlchemy(app)  # Initializing the database with the app configuration
 
+migrate = Migrate(app, db)
+
 
 # Defining the User model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # Primary key, unique identifier for each user
     username = db.Column(db.String(50), unique=True, nullable=False)  # Username must be unique and not null
     lists = db.relationship('TodoList', backref='user', lazy=True)  # Relationship with TodoList model
+    password = db.Column(db.String(60), nullable=False)  
 
 
 # Defining the TodoList model
@@ -40,8 +44,9 @@ class TodoItem(db.Model):
 def register():
     # Check if the request method is POST, meaning the form has been submitted
     if request.method == 'POST':
-        # Retrieve the username from the form data
+        # Retrieve the username and password from the form data
         username = request.form['username']
+        password = request.form['password']  # Get the password 
         
         # Check if a user with the submitted username already exists in the database
         existing_user = User.query.filter_by(username=username).first()
@@ -49,15 +54,15 @@ def register():
             # If the username exists, flash an error message and redirect to the registration page
             flash('Username already exists. Please choose a different username.', 'danger')
             return redirect(url_for('register'))
- 
-        # If the username doesn't exist, create a new user and add it to the database
-        new_user = User(username=username)
-        db.session.add(new_user)
-        db.session.commit()
+        else:
+            # If the username doesn't exist, create a new user and add it to the database
+            new_user = User(username=username, password=password)  # Store the password
+            db.session.add(new_user)
+            db.session.commit()
 
         # Flash a success message and redirect to the login page
         flash('User registered successfully. You can now log in.', 'success')
-        return redirect(url_for('login'))
+        return redirect(url_for('login'))  # Redirecting to the login page after successful registration
 
     # If the request method is GET, render the registration page
     return render_template('register.html')
@@ -65,24 +70,20 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Check if the request method is POST, meaning the form has been submitted
     if request.method == 'POST':
-        # Retrieve the username from the form data
         username = request.form['username']
+        password = request.form['password']
         
-        # Check if the submitted username exists in the database
         user = User.query.filter_by(username=username).first()
-        if user:
-            # If the username exists, flash a success message and redirect to the home page
+        if user and user.password == password:
             flash('Login successful. Welcome back!', 'success')
-            return redirect(url_for('home'))  # Update 'home' to your desired route
+            return redirect(url_for('todo'))  # Redirecting to the todo page after successful login
         else:
-            # If the username doesn't exist, flash an error message and redirect to the login page
-            flash('Username does not exist. Please register or try a different username.', 'danger')
+            flash('Invalid username or password. Please try again.', 'danger')
             return redirect(url_for('login'))
 
-    # If the request method is GET, render the login page
     return render_template('login.html')
+
 
 
 # Route for creating todo lists
