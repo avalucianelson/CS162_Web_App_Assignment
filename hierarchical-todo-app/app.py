@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 
 # Initializing the Flask application
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'I_dont_really_care_if_this_is_secure' # adding a secret key
 
 # Configuring the database URI for SQLAlchemy
 # Using SQLite for simplicity, creating a file 'site.db' in the project directory
@@ -18,8 +19,8 @@ migrate = Migrate(app, db)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # Primary key, unique identifier for each user
     username = db.Column(db.String(50), unique=True, nullable=False)  # Username must be unique and not null
+    password = db.Column(db.String(60), nullable=False)     
     lists = db.relationship('TodoList', backref='user', lazy=True)  # Relationship with TodoList model
-    password = db.Column(db.String(60), nullable=False)  
 
 
 # Defining the TodoList model
