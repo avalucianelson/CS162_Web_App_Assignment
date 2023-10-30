@@ -14,32 +14,35 @@ db = SQLAlchemy(app)  # Initializing the database with the app configuration
 
 migrate = Migrate(app, db)
 
-
-# Defining the User model
+# User Model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # Primary key, unique identifier for each user
-    username = db.Column(db.String(50), unique=True, nullable=False)  # Username must be unique and not null
-    password = db.Column(db.String(60), nullable=False)     
-    lists = db.relationship('TodoList', backref='user', lazy=True)  # Relationship with TodoList model
+    username = db.Column(db.String(50), unique=True, nullable=False)  # Username, must be unique and not null
+    password = db.Column(db.String(60), nullable=False)  # Password, hashed, not null
+    lists = db.relationship('TodoList', backref='user', lazy=True)  # Relationship with TodoList, one user to many lists
 
 
-# Defining the TodoList model
+# TodoList Model
 class TodoList(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # Primary key, unique identifier for each list
-    title = db.Column(db.String(100), nullable=False)  # Title of the list, not null
+    title = db.Column(db.String(100), nullable=False)  # Title of the todo list, not null
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Foreign key referencing User model
-    items = db.relationship('TodoItem', backref='list', lazy=True)  # Relationship with TodoItem model
+    items = db.relationship('TodoItem', backref='list', lazy=True)  # Relationship with TodoItem, one list to many items
 
 
-# Defining the TodoItem model
+# TodoItem Model
 class TodoItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # Primary key, unique identifier for each item
-    content = db.Column(db.String(200), nullable=False)  # Content of the item, not null
+    content = db.Column(db.String(200), nullable=False)  # Content of the todo item, not null
     list_id = db.Column(db.Integer, db.ForeignKey('todo_list.id'), nullable=False)  # Foreign key referencing TodoList model
-    parent_id = db.Column(db.Integer, db.ForeignKey('todo_item.id'), nullable=True)  # Self-referencing foreign key for sub-items
-    sub_items = db.relationship('TodoItem', backref=db.backref('parent', remote_side=[id]), lazy=True)  # Relationship for sub-items
-    completed = db.Column(db.Boolean, default=False)  # New column to manage completion status
-
+    
+    # Self-referencing foreign key to implement hierarchical todo items (sub-items)
+    parent_id = db.Column(db.Integer, db.ForeignKey('todo_item.id'), nullable=True)  
+    
+    # Relationship for handling sub-items. Each item can have multiple sub-items.
+    sub_items = db.relationship('TodoItem', backref=db.backref('parent', remote_side=[id]), lazy=True)  
+    
+    completed = db.Column(db.Boolean, default=False)  # Boolean to track whether a todo item is completed or not
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -100,6 +103,20 @@ def create_todolist():
     db.session.commit()  # Committing the session to save the todo list in the database
 
     return jsonify({"message": "Todo list created successfully."}), 201  # Returning a success message
+
+
+@app.route('/update-todo-list/<int:list_id>', methods=['PUT'])
+def update_todo_list(list_id):
+    data = request.get_json()
+    title = data.get('title')
+
+    todo_list = TodoList.query.get(list_id)
+    if todo_list:
+        todo_list.title = title
+        db.session.commit()
+        return jsonify({"message": "Todo list updated successfully."}), 200
+    else:
+        return jsonify({"message": "Todo list not found."}), 404
 
 
 @app.route('/update-todo-item/<int:item_id>', methods=['PUT'])
@@ -165,6 +182,17 @@ def mark_as_complete(item_id):
         return jsonify({"message": "Todo item not found."}), 404  # Returning a message if the todo item does not exist
 
 
+@app.route('/delete-todo-list/<int:list_id>', methods=['DELETE'])
+def delete_todo_list(list_id):
+    todo_list = TodoList.query.get(list_id)
+    if todo_list:
+        db.session.delete(todo_list)
+        db.session.commit()
+        return jsonify({"message": "Todo list deleted successfully."}), 200
+    else:
+        return jsonify({"message": "Todo list not found."}), 404
+
+
 # Route for deleting a todo item
 @app.route('/delete-todo-item/<int:item_id>', methods=['DELETE'])
 def delete_todoitem(item_id):
@@ -186,19 +214,65 @@ def delete_todoitem(item_id):
         return jsonify({"message": "Todo item not found."}), 404  # Returning a message if the todo item does not exist
 
 
+@app.route('/add-todo-list', methods=['POST'])
+def add_todo_list():
+    data = request.get_json()
+    title = data.get('title')
+    new_list = TodoList(title=title)
+    db.session.add(new_list)
+    db.session.commit()
+    return jsonify({"message": "Todo list added successfully."}), 201
+
+
 @app.route('/add-todo-item', methods=['POST'])
 def add_todo_item():
-    content = request.json.get('content')
-    list_id = request.json.get('list_id')  # Get the list_id from the request
+    data = request.get_json()
+    content = data.get('content')
+    list_id = data.get('list_id')
+    parent_id = data.get('parent_id', None)
 
-    # Ensure that content and list_id are not empty
-    if content and list_id:
-        new_item = TodoItem(content=content, list_id=list_id)
-        db.session.add(new_item)
-        db.session.commit()
-        return jsonify(message='Todo item added successfully'), 200
-    else:
-        return jsonify(message='Content or list_id is missing'), 400
+    new_item = TodoItem(content=content, list_id=list_id, parent_id=parent_id)
+    db.session.add(new_item)
+    db.session.commit()
+
+    return jsonify({"message": "Todo item added successfully."}), 201
+
+
+
+@app.route('/get-todo-lists-items', methods=['GET'])
+def get_todo_lists_items():
+    lists = TodoList.query.all()
+    lists_data = []
+
+    for list in lists:
+        list_items = []
+        for item in list.items:
+            if not item.parent_id:  # Only top-level items
+                list_items.append({
+                    'id': item.id,
+                    'content': item.content,
+                    'completed': item.completed,
+                    'sub_items': get_sub_items(item.sub_items)  # Recursive function to get sub-items
+                })
+        lists_data.append({
+            'id': list.id,
+            'title': list.title,
+            'items': list_items
+        })
+
+    return jsonify(lists_data)
+
+
+def get_sub_items(sub_items):
+    items = []
+    for item in sub_items:
+        items.append({
+            'id': item.id,
+            'content': item.content,
+            'completed': item.completed,
+            'sub_items': get_sub_items(item.sub_items)
+        })
+    return items
 
 
 @app.route('/get-todo-items', methods=['GET'])
@@ -231,6 +305,20 @@ def get_todo_items():
 
     # Returning the lists_data as JSON
     return jsonify(lists_data)
+
+
+@app.route('/move-item/<int:item_id>', methods=['PUT'])
+def move_item(item_id):
+    data = request.get_json()
+    new_list_id = data.get('new_list_id')
+
+    todo_item = TodoItem.query.get(item_id)
+    if todo_item:
+        todo_item.list_id = new_list_id
+        db.session.commit()
+        return jsonify({"message": "Todo item moved successfully."}), 200
+    else:
+        return jsonify({"message": "Todo item not found."}), 404
 
 
 @app.route('/todo')

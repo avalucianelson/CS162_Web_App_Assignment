@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo List</title>
+    <title>Todo Application</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <nav>
+        <!-- Navigation bar with links to different pages -->
         <h1>Todo Application</h1>
         <ul>
             <li><a href="/">Home</a></li>
@@ -16,83 +17,33 @@
             <li><a href="/todo">Todo</a></li> 
         </ul>
     </nav>
-    <header>
-        <h1>Todo List</h1>
-    </header>
 
-    <section id="todo-input">
-        <input type="text" id="new-todo" placeholder="Enter new todo">
-        
-        <!-- Dropdown to select list_id -->
-        <select id="list-id">
-            <option value="1">List 1</option>
-            <option value="2">List 2</option>
-            <!-- Add more options as needed -->
+    <section id="todo-lists">
+        <h2>Todo Lists</h2>
+        <!-- Dropdown to select the active todo list -->
+        <select id="active-list">
+            <!-- Options for todo lists will be dynamically populated here -->
         </select>
-        
-        <button onclick="addTodoItem(document.getElementById('list-id').value)">Add Todo</button>
+        <!-- Buttons to manage todo lists -->
+        <button id="create-list">Create List</button>
+        <button id="edit-list">Edit List</button>
+        <button id="delete-list">Delete List</button>
     </section>
-    
-    
-    <!-- Example of a todo item with update and delete buttons -->
-    <div class="todo-item" data-id="1">
-        <input type="text" value="Sample Todo Item">
-        <button class="update-button" data-id="1">Update</button>
-        <button class="delete-button" data-id="1">Delete</button>
-    </div>
-    <section id="todo-list-container">
-        <!-- Todo items will be dynamically added here -->
+
+    <section id="todo-items">
+        <h2>Todo Items</h2>
+        <!-- Form to add new todo items -->
+        <form id="add-item-form">
+            <input type="text" id="new-item" placeholder="Enter new item">
+            <button type="submit">Add Item</button>
+        </form>
+
+        <div id="items-container">
+            <!-- Todo items will be dynamically displayed here with buttons for edit, delete, complete, and move -->
+            <!-- Each item will also have options to add sub-items up to 3 levels deep -->
+        </div>
     </section>
 
     <script src="{{ url_for('static', filename='app.js') }}"></script>
-    <script>
-        // Event listener for update buttons
-        document.querySelectorAll('.update-button').forEach(button => {
-            button.addEventListener('click', (event) => {
-                const itemId = event.target.getAttribute('data-id'); // Get the todo item ID from the data-id attribute
-                const itemContent = document.querySelector(`.todo-item[data-id="${itemId}"] input`).value; // Get the updated content
-    
-                // Make a PUT request to update the todo item
-                fetch(`/update-todo-item/${itemId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        content: itemContent,
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data.message); // Log the server response
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-            });
-        });
-    
-        // Event listener for delete buttons
-        document.querySelectorAll('.delete-button').forEach(button => {
-            button.addEventListener('click', (event) => {
-                const itemId = event.target.getAttribute('data-id'); // Get the todo item ID from the data-id attribute
-    
-                // Make a DELETE request to delete the todo item
-                fetch(`/delete-todo-item/${itemId}`, {
-                    method: 'DELETE',
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data.message); // Log the server response
-                    location.reload(); // Reload the page to reflect the deletion
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-            });
-        });
-    </script>
-    
-    
 </body>
 </html>

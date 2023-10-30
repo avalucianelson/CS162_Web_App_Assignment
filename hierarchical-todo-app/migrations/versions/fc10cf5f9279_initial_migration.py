@@ -1,8 +1,8 @@
-"""Added password column
+"""Initial migration
 
-Revision ID: 2831de71126e
+Revision ID: fc10cf5f9279
 Revises: 
-Create Date: 2023-10-29 17:30:26.861862
+Create Date: 2023-10-29 18:48:16.348000
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '2831de71126e'
+revision = 'fc10cf5f9279'
 down_revision = None
 branch_labels = None
 depends_on = None

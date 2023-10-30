@@ -11,85 +11,95 @@ function sendAjaxRequest(method, url, data, successCallback) {
     xhr.send(JSON.stringify(data));
 }
 
-// Function to fetch todo items from the server
-function fetchTodoItems() {
-    // Sending a GET request to the server to retrieve todo items
-    sendAjaxRequest('GET', '/get-todo-items', {}, function (response) {
-        // Displaying the fetched todo items on the webpage
-        displayTodoItems(response.items);
+// Function to fetch todo lists and items from the server
+function fetchTodoListsAndItems() {
+    sendAjaxRequest('GET', '/get-todo-lists-items', {}, function (response) {
+        displayTodoListsAndItems(response.lists);
     });
 }
 
-function displayTodoItems(items) {
-    var todoListContainer = document.getElementById('todo-list-container');
-    
-    // Check if items is defined and is an array
-    if (items && Array.isArray(items)) {
-        todoListContainer.innerHTML = ''; // Clearing the container
+// Function to display todo lists and items on the webpage
+function displayTodoListsAndItems(lists) {
+    var todoContainer = document.getElementById('todo-container');
+    todoContainer.innerHTML = ''; // Clearing the container
 
-        items.forEach(function (item) {
-            var itemElement = document.createElement('div');
-            itemElement.innerText = item.content;
-            todoListContainer.appendChild(itemElement);
-        });
-    } else {
-        console.error('Items is undefined or not an array:', items);
-    }
+    lists.forEach(function (list) {
+        // Creating and appending list title
+        var listElement = document.createElement('div');
+        listElement.className = 'todo-list';
+        listElement.innerHTML = `<h2>${list.title}</h2>`;
+        todoContainer.appendChild(listElement);
+
+        // Function to recursively create and append items and sub-items
+        function createItems(items, parentElement) {
+            items.forEach(function (item) {
+                var itemElement = document.createElement('div');
+                itemElement.className = 'todo-item';
+                itemElement.innerHTML = `
+                    <input type="text" value="${item.content}">
+                    <button onclick="updateTodo(${item.id}, this.previousElementSibling.value, true)">Update</button>
+                    <button onclick="deleteTodo(${item.id}, true)">Delete</button>
+                    <button onclick="markAsComplete(${item.id})">Complete</button>
+                `;
+                parentElement.appendChild(itemElement);
+
+                // Recursively creating and appending sub-items
+                if (item.sub_items && item.sub_items.length > 0) {
+                    createItems(item.sub_items, itemElement);
+                }
+            });
+        }
+
+        // Creating and appending items to the list
+        createItems(list.items, listElement);
+    });
 }
 
-
+// Function to add a new todo list
+function addTodoList() {
+    var newListTitle = document.getElementById('new-list-title').value;
+    sendAjaxRequest('POST', '/add-todo-list', { title: newListTitle }, function (response) {
+        fetchTodoListsAndItems();
+    });
+}
 
 // Function to add a new todo item
-function addTodoItem(list_id) {  // Pass the list_id as a parameter
+function addTodoItem(listId, parentId = null) {
     var newItemContent = document.getElementById('new-todo').value;
-
-    // Sending a POST request to the server to add a new todo item
-    sendAjaxRequest('POST', '/add-todo-item', { content: newItemContent, list_id: list_id }, function (response) {
-        // Fetching and displaying the updated list of todo items
-        fetchTodoItems();
+    sendAjaxRequest('POST', '/add-todo-item', { content: newItemContent, list_id: listId, parent_id: parentId }, function (response) {
+        fetchTodoListsAndItems();
     });
 }
 
-
-// Function to complete a todo item
-function completeTodoItem(itemId) {
-    // Sending a PUT request to the server to mark a todo item as completed
-    sendAjaxRequest('PUT', `/todoitem/${itemId}/complete`, {}, function (response) {
-        // Fetching and displaying the updated list of todo items
-        fetchTodoItems();
+// Function to update a todo list or item
+function updateTodo(id, content, isItem = true) {
+    var url = isItem ? `/update-todo-item/${id}` : `/update-todo-list/${id}`;
+    sendAjaxRequest('PUT', url, { content: content }, function (response) {
+        fetchTodoListsAndItems();
     });
 }
 
-// Function to delete a todo item
-function deleteTodoItem(itemId) {
-    // Sending a DELETE request to the server to delete a todo item
-    sendAjaxRequest('DELETE', `/todoitem/${itemId}`, {}, function (response) {
-        // Fetching and displaying the updated list of todo items
-        fetchTodoItems();
+// Function to delete a todo list or item
+function deleteTodo(id, isItem = true) {
+    var url = isItem ? `/delete-todo-item/${id}` : `/delete-todo-list/${id}`;
+    sendAjaxRequest('DELETE', url, {}, function (response) {
+        fetchTodoListsAndItems();
     });
 }
 
-
-function updateTodoItem(item_id, content, completed) {
-    fetch(`/update-todo-item/${item_id}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            content: content,
-            completed: completed
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data.message);
-        fetchTodoItems();  // Refresh the todo items list after updating
-    })
-    .catch(error => {
-        console.error('Error updating todo item:', error);
+// Function to mark a todo item as complete
+function markAsComplete(itemId) {
+    sendAjaxRequest('PUT', `/mark-as-complete/${itemId}`, {}, function (response) {
+        fetchTodoListsAndItems();
     });
 }
 
-// Load todo items when the page loads
-fetchTodoItems();
+// Function to move a todo item to a different list
+function moveItem(itemId, newListId) {
+    sendAjaxRequest('PUT', `/move-item/${itemId}`, { new_list_id: newListId }, function (response) {
+        fetchTodoListsAndItems();
+    });
+}
+
+// Load todo lists and items when the page loads
+fetchTodoListsAndItems();
