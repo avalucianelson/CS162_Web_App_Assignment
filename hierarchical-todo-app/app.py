@@ -11,8 +11,8 @@ app.config['SECRET_KEY'] = 'I_dont_really_care_if_this_is_secure' # adding a sec
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 
 db = SQLAlchemy(app)  # Initializing the database with the app configuration
-
 migrate = Migrate(app, db)
+
 
 # User Model
 class User(db.Model):
@@ -34,15 +34,13 @@ class TodoList(db.Model):
 class TodoItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # Primary key, unique identifier for each item
     content = db.Column(db.String(200), nullable=False)  # Content of the todo item, not null
-    list_id = db.Column(db.Integer, db.ForeignKey('todo_list.id'), nullable=False)  # Foreign key referencing TodoList model
-    
+    list_id = db.Column(db.Integer, db.ForeignKey('todo_list.id'), nullable=False)  # Foreign key referencing TodoList model 
     # Self-referencing foreign key to implement hierarchical todo items (sub-items)
     parent_id = db.Column(db.Integer, db.ForeignKey('todo_item.id'), nullable=True)  
-    
     # Relationship for handling sub-items. Each item can have multiple sub-items.
     sub_items = db.relationship('TodoItem', backref=db.backref('parent', remote_side=[id]), lazy=True)  
-    
     completed = db.Column(db.Boolean, default=False)  # Boolean to track whether a todo item is completed or not
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -89,7 +87,6 @@ def login():
     return render_template('login.html')
 
 
-
 # Route for creating todo lists
 @app.route('/todolist', methods=['POST'])
 def create_todolist():
@@ -131,8 +128,6 @@ def update_todoitem(item_id):
         return jsonify({"message": "Todo item updated successfully."}), 200
     else:
         return jsonify({"message": "Todo item not found."}), 404
-
-
 
 
 # Route for adding items to the todo lists
@@ -236,7 +231,6 @@ def add_todo_item():
     db.session.commit()
 
     return jsonify({"message": "Todo item added successfully."}), 201
-
 
 
 @app.route('/get-todo-lists-items', methods=['GET'])
