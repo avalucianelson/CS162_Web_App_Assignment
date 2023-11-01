@@ -6,7 +6,8 @@
     <title>Todo Application</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body>
+<body data-user-id="{{ user_id }}">
+
     <nav>
         <!-- Navigation bar with links to different pages -->
         <h1>Todo Application</h1>

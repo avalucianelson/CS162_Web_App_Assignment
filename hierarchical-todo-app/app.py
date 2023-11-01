@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify, render_template, redirect, flash, url_for
+from flask import Flask, request, session, jsonify, render_template, redirect, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+
 
 # Initializing the Flask application
 app = Flask(__name__)
@@ -69,7 +70,6 @@ def register():
     # If the request method is GET, render the registration page
     return render_template('register.html')
 
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -78,6 +78,7 @@ def login():
         
         user = User.query.filter_by(username=username).first()
         if user and user.password == password:
+            session['user_id'] = user.id  # Store user_id in the session
             flash('Login successful. Welcome back!', 'success')
             return redirect(url_for('todo'))  # Redirecting to the todo page after successful login
         else:
@@ -85,6 +86,7 @@ def login():
             return redirect(url_for('login'))
 
     return render_template('login.html')
+
 
 
 # Route for creating todo lists
@@ -212,11 +214,18 @@ def delete_todoitem(item_id):
 @app.route('/add-todo-list', methods=['POST'])
 def add_todo_list():
     data = request.get_json()
+    print(f"Received data: {data}")  # Debug print statement
+    
     title = data.get('title')
-    new_list = TodoList(title=title)
+    user_id = data.get('user_id')
+    print(f"user_id: {user_id}")  # Debug print statement
+    
+    new_list = TodoList(title=title, user_id=user_id)
     db.session.add(new_list)
     db.session.commit()
+    
     return jsonify({"message": "Todo list added successfully."}), 201
+
 
 
 @app.route('/add-todo-item', methods=['POST'])
@@ -315,15 +324,20 @@ def move_item(item_id):
         return jsonify({"message": "Todo item not found."}), 404
 
 
+
 @app.route('/todo')
 def todo():
-    return render_template('todo.html')
+    user_id = session.get('user_id')  # Get user_id from the session
+    if user_id:  # Check if user_id exists in the session
+        return render_template('todo.html', user_id=user_id)  # Pass user_id to the template
+    else:
+        flash('Please login to access the todo page.', 'danger')
+        return redirect(url_for('login'))  # Redirect to login if no user_id in session
 
 
-# Defining a basic route for testing
 @app.route('/')
 def home():
-    return render_template('index.html')  # or the name of your home page HTML file
+    return render_template('index.html')  # the home page
 
 
 # Main block to run the application

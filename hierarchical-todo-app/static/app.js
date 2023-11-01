@@ -18,50 +18,51 @@ function fetchTodoListsAndItems() {
     });
 }
 
-// Function to display todo lists and items on the webpage
 function displayTodoListsAndItems(lists) {
-    var todoContainer = document.getElementById('todo-container');
-    todoContainer.innerHTML = ''; // Clearing the container
+    // Populating the dropdown
+    var activeListDropdown = document.getElementById('active-list');
+    activeListDropdown.innerHTML = ''; // Clearing the dropdown
 
     lists.forEach(function (list) {
-        // Creating and appending list title
-        var listElement = document.createElement('div');
-        listElement.className = 'todo-list';
-        listElement.innerHTML = `<h2>${list.title}</h2>`;
-        todoContainer.appendChild(listElement);
+        var option = document.createElement('option');
+        option.value = list.id;
+        option.textContent = list.title;
+        activeListDropdown.appendChild(option);
+    });
 
-        // Function to recursively create and append items and sub-items
-        function createItems(items, parentElement) {
-            items.forEach(function (item) {
+    // Displaying the todo lists and items
+    var itemsContainer = document.getElementById('items-container');
+    itemsContainer.innerHTML = ''; // Clearing the container
+
+    var activeListId = activeListDropdown.value; // Getting the selected list id
+
+    lists.forEach(function (list) {
+        if (list.id == activeListId) { // Displaying items for the selected list
+            list.items.forEach(function (item) {
                 var itemElement = document.createElement('div');
                 itemElement.className = 'todo-item';
                 itemElement.innerHTML = `
-                    <input type="text" value="${item.content}">
-                    <button onclick="updateTodo(${item.id}, this.previousElementSibling.value, true)">Update</button>
+                    <p>${item.content}</p>
                     <button onclick="deleteTodo(${item.id}, true)">Delete</button>
                     <button onclick="markAsComplete(${item.id})">Complete</button>
                 `;
-                parentElement.appendChild(itemElement);
-
-                // Recursively creating and appending sub-items
-                if (item.sub_items && item.sub_items.length > 0) {
-                    createItems(item.sub_items, itemElement);
-                }
+                itemsContainer.appendChild(itemElement);
             });
         }
-
-        // Creating and appending items to the list
-        createItems(list.items, listElement);
     });
 }
 
-// Function to add a new todo list
 function addTodoList() {
+    var userId = document.body.getAttribute('data-user-id');
+    console.log("user_id:", userId);  // Debug log statement
+    
     var newListTitle = document.getElementById('new-list-title').value;
-    sendAjaxRequest('POST', '/add-todo-list', { title: newListTitle }, function (response) {
+    sendAjaxRequest('POST', '/add-todo-list', { title: newListTitle, user_id: userId }, function (response) {
         fetchTodoListsAndItems();
     });
 }
+
+
 
 // Function to add a new todo item
 function addTodoItem(listId, parentId = null) {
@@ -71,7 +72,7 @@ function addTodoItem(listId, parentId = null) {
     });
 }
 
-// Function to update a todo list or item
+// Function to update a todo item
 function updateTodo(id, content, isItem = true) {
     var url = isItem ? `/update-todo-item/${id}` : `/update-todo-list/${id}`;
     sendAjaxRequest('PUT', url, { content: content }, function (response) {
@@ -79,7 +80,7 @@ function updateTodo(id, content, isItem = true) {
     });
 }
 
-// Function to delete a todo list or item
+// Function to delete a todo item
 function deleteTodo(id, isItem = true) {
     var url = isItem ? `/delete-todo-item/${id}` : `/delete-todo-list/${id}`;
     sendAjaxRequest('DELETE', url, {}, function (response) {
@@ -101,5 +102,40 @@ function moveItem(itemId, newListId) {
     });
 }
 
-// Load todo lists and items when the page loads
-fetchTodoListsAndItems();
+// Function to create a new todo list
+document.getElementById('create-list').addEventListener('click', function() {
+    var title = prompt("Enter the title of the new list:");
+    if (title) {
+        sendAjaxRequest('POST', '/todolist', { title: title }, function(response) {
+            fetchTodoListsAndItems();
+        });
+    }
+});
+
+// Function to edit the selected todo list
+document.getElementById('edit-list').addEventListener('click', function() {
+    var listId = document.getElementById('active-list').value; // Assuming the select has values as list IDs
+    var newTitle = prompt("Enter the new title of the list:");
+    if (newTitle) {
+        sendAjaxRequest('PUT', `/update-todo-list/${listId}`, { title: newTitle }, function(response) {
+            fetchTodoListsAndItems();
+        });
+    }
+});
+
+// Function to delete the selected todo list
+document.getElementById('delete-list').addEventListener('click', function() {
+    var listId = document.getElementById('active-list').value; // Assuming the select has values as list IDs
+    var confirmation = confirm("Are you sure you want to delete this list?");
+    if (confirmation) {
+        sendAjaxRequest('DELETE', `/delete-todo-list/${listId}`, {}, function(response) {
+            fetchTodoListsAndItems();
+        });
+    }
+});
+
+window.onload = function() {
+    document.getElementById('active-list').addEventListener('change', function() {
+        fetchTodoListsAndItems();
+    });
+};
