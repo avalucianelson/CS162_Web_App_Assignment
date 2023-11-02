@@ -27,7 +27,7 @@ class User(db.Model):
 class TodoList(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # Primary key, unique identifier for each list
     title = db.Column(db.String(100), nullable=False)  # Title of the todo list, not null
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Foreign key referencing User model
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # Foreign key referencing User model
     items = db.relationship('TodoItem', backref='list', lazy=True)  # Relationship with TodoItem, one list to many items
 
 
@@ -94,7 +94,9 @@ def login():
 def create_todolist():
     data = request.get_json()  # Getting the JSON data from the request
     title = data.get('title')  # Extracting the title of the todo list from the data
-    user_id = data.get('user_id')  # Extracting the user_id from the data
+    # user_id = data.get('user_id')  # Extracting the user_id from the data
+    user_id = session['user_id']
+    print(user_id)
 
     # Creating a new TodoList object with the provided title and user_id
     new_list = TodoList(title=title, user_id=user_id)
@@ -213,16 +215,7 @@ def delete_todoitem(item_id):
 
 @app.route('/add-todo-list', methods=['POST'])
 def add_todo_list():
-    data = request.get_json()
-    print(f"Received data: {data}")  # Debug print statement
-    
-    title = data.get('title')
-    user_id = data.get('user_id')
-    print(f"user_id: {user_id}")  # Debug print statement
-    
-    new_list = TodoList(title=title, user_id=user_id)
-    db.session.add(new_list)
-    db.session.commit()
+    print("This workssssss")
     
     return jsonify({"message": "Todo list added successfully."}), 201
 

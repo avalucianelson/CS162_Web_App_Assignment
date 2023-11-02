@@ -11,14 +11,14 @@ function sendAjaxRequest(method, url, data, successCallback) {
     xhr.send(JSON.stringify(data));
 }
 
-// Function to fetch todo lists and items from the server
-function fetchTodoListsAndItems() {
+// Modify the fetchTodoListsAndItems function to accept an activeListId parameter
+function fetchTodoListsAndItems(activeListId = null) {
     sendAjaxRequest('GET', '/get-todo-lists-items', {}, function (response) {
-        displayTodoListsAndItems(response.lists);
+        displayTodoListsAndItems(response, activeListId);
     });
 }
 
-function displayTodoListsAndItems(lists) {
+function displayTodoListsAndItems(lists, activeListId) {
     // Populating the dropdown
     var activeListDropdown = document.getElementById('active-list');
     activeListDropdown.innerHTML = ''; // Clearing the dropdown
@@ -30,11 +30,17 @@ function displayTodoListsAndItems(lists) {
         activeListDropdown.appendChild(option);
     });
 
+    // If an activeListId is not provided, default to the first list's ID or the current selection
+    if (!activeListId) {
+        activeListId = activeListDropdown.value;
+    } else {
+        // Set the dropdown to the activeListId
+        activeListDropdown.value = activeListId;
+    }
+
     // Displaying the todo lists and items
     var itemsContainer = document.getElementById('items-container');
     itemsContainer.innerHTML = ''; // Clearing the container
-
-    var activeListId = activeListDropdown.value; // Getting the selected list id
 
     lists.forEach(function (list) {
         if (list.id == activeListId) { // Displaying items for the selected list
@@ -135,7 +141,45 @@ document.getElementById('delete-list').addEventListener('click', function() {
 });
 
 window.onload = function() {
-    document.getElementById('active-list').addEventListener('change', function() {
+    document.getElementById('active-list').addEventListener('click', function() {
         fetchTodoListsAndItems();
     });
 };
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Attach event listener to the form
+    var form = document.getElementById('add-item-form');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+            var listId = document.getElementById('active-list').value; // Get the selected list ID
+            addTodoItem(listId); // Call the function to add the todo item
+        });
+
+        
+    } else {
+        console.error('Form with ID "add-item-form" was not found.');
+    }
+
+    // Inside the form's submit event listener
+    
+
+});
+
+// Function to handle changing of the active list
+function onActiveListChange() {
+    var activeListId = document.getElementById('active-list').value;
+    fetchTodoListsAndItems(activeListId); // Fetch and display items for the selected list
+}
+
+// Attach the change event listener to the dropdown
+document.addEventListener('DOMContentLoaded', function() {
+    var activeListDropdown = document.getElementById('active-list');
+    if (activeListDropdown) {
+        activeListDropdown.addEventListener('change', onActiveListChange);
+    } else {
+        console.error('Dropdown with ID "active-list" was not found.');
+    }
+});
+
