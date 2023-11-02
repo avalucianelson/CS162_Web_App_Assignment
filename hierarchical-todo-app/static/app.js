@@ -27,21 +27,18 @@ function displayTodoListsAndItems(lists, activeListId) {
         var option = document.createElement('option');
         option.value = list.id;
         option.textContent = list.title;
+        // Set the selected attribute if this is the active list
+        if (list.id == activeListId) {
+            option.selected = true;
+        }
         activeListDropdown.appendChild(option);
     });
-
-    // If an activeListId is not provided, default to the first list's ID or the current selection
-    if (!activeListId) {
-        activeListId = activeListDropdown.value;
-    } else {
-        // Set the dropdown to the activeListId
-        activeListDropdown.value = activeListId;
-    }
 
     // Displaying the todo lists and items
     var itemsContainer = document.getElementById('items-container');
     itemsContainer.innerHTML = ''; // Clearing the container
 
+    // Use the provided activeListId to determine which items to display
     lists.forEach(function (list) {
         if (list.id == activeListId) { // Displaying items for the selected list
             list.items.forEach(function (item) {
@@ -57,6 +54,7 @@ function displayTodoListsAndItems(lists, activeListId) {
         }
     });
 }
+
 
 function addTodoList() {
     var userId = document.body.getAttribute('data-user-id');

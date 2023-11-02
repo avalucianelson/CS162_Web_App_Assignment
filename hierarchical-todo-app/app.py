@@ -220,7 +220,6 @@ def add_todo_list():
     return jsonify({"message": "Todo list added successfully."}), 201
 
 
-
 @app.route('/add-todo-item', methods=['POST'])
 def add_todo_item():
     data = request.get_json()
@@ -255,6 +254,7 @@ def get_todo_lists_items():
             'title': list.title,
             'items': list_items
         })
+
 
     return jsonify(lists_data)
 
@@ -317,7 +317,6 @@ def move_item(item_id):
         return jsonify({"message": "Todo item not found."}), 404
 
 
-
 @app.route('/todo')
 def todo():
     user_id = session.get('user_id')  # Get user_id from the session
@@ -330,7 +329,7 @@ def todo():
 
 @app.route('/')
 def home():
-    return render_template('index.html')  # the home page
+    return render_template('login.html')  # the home page (the login page really)
 
 
 # Main block to run the application
